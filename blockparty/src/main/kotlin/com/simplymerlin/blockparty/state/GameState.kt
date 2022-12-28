@@ -1,29 +1,25 @@
 package com.simplymerlin.blockparty.state
 
+import com.simplymerlin.fsmchamp.State
 import net.minestom.server.MinecraftServer
+import net.minestom.server.event.EventNode
 import net.minestom.server.timer.Task
-import net.minestom.server.timer.TaskSchedule
-import net.minikloon.fsmgasm.State
 
 abstract class GameState : State() {
 
     val tasks: MutableList<Task> = mutableListOf()
+    val node = EventNode.all(javaClass.name)
 
     override fun start() {
         super.start()
-        registerTask(MinecraftServer.getSchedulerManager().scheduleTask({
-            onSecond()
-        }, TaskSchedule.immediate(), TaskSchedule.seconds(1)))
-    }
-
-    protected open fun onSecond() {
-
+        MinecraftServer.getGlobalEventHandler().addChild(node)
     }
 
     override fun end() {
         super.end()
         tasks.forEach { it.cancel() }
         tasks.clear()
+        MinecraftServer.getGlobalEventHandler().removeChild(node)
     }
 
     fun registerTask(task: Task) {

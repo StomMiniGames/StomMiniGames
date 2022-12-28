@@ -1,15 +1,16 @@
 package com.simplymerlin.blockparty.state
 
 import com.simplymerlin.blockparty.BlockPartyGame
-import net.minikloon.fsmgasm.State
-import java.time.Duration
+import com.simplymerlin.fsmchamp.State
+import net.kyori.adventure.text.Component
+import net.minestom.server.adventure.audience.Audiences
 
 class EndState(private val game: BlockPartyGame) : State() {
 
-    override val duration: Duration = Duration.ofSeconds(10)
+    override var time = 10
 
     override fun onStart() {
-
+        Audiences.all().sendMessage(Component.text("Game has ended!"))
     }
 
     override fun onUpdate() {
@@ -17,7 +18,8 @@ class EndState(private val game: BlockPartyGame) : State() {
     }
 
     override fun onEnd() {
-
+        game.alivePlayers.clear()
+        game.restart()
     }
 
 }

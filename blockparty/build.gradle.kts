@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.7.21"
+    kotlin("jvm") version "1.7.22"
     id("com.github.johnrengelman.shadow") version "7.1.0"
     application
 }
@@ -20,8 +20,9 @@ repositories {
 
 dependencies {
     implementation("com.github.Minestom:Minestom:eb06ba8664")
-    implementation("com.github.Minikloon:FSMgasm:bd1b5057a3")
+    implementation("com.github.SimplyMerlin:FSMChamp:v1.0.3")
 }
+
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"

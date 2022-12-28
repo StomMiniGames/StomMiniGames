@@ -17,7 +17,6 @@ class BlockParty {
         .also {
             MinecraftServer.getDimensionTypeManager().addDimension(it)
         }
-
     private val instance = instanceManager.createInstanceContainer(fullbrightDimension)
 
     init {

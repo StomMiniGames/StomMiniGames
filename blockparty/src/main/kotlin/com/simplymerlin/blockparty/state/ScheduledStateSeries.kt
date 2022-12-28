@@ -1,9 +1,9 @@
 package com.simplymerlin.blockparty.state
 
+import com.simplymerlin.fsmchamp.StateSeries
 import net.minestom.server.MinecraftServer
 import net.minestom.server.timer.Task
 import net.minestom.server.timer.TaskSchedule
-import net.minikloon.fsmgasm.StateSeries
 
 class ScheduledStateSeries : StateSeries() {
 
@@ -13,7 +13,7 @@ class ScheduledStateSeries : StateSeries() {
         super.onStart()
         task = MinecraftServer.getSchedulerManager().scheduleTask({
             update()
-        }, TaskSchedule.immediate(), TaskSchedule.tick(1))
+        }, TaskSchedule.immediate(), TaskSchedule.tick(20))
     }
 
     override fun onEnd() {

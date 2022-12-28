@@ -8,9 +8,9 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
+import net.minestom.server.entity.Player
 import net.minestom.server.event.player.PlayerLoginEvent
 import net.minestom.server.instance.InstanceContainer
-import net.minestom.server.instance.block.Block
 
 class BlockPartyGame(val instance: InstanceContainer) {
 
@@ -24,13 +24,11 @@ class BlockPartyGame(val instance: InstanceContainer) {
         }
     }
 
-    private val state = ScheduledStateSeries()
+    val alivePlayers: MutableList<Player> = mutableListOf()
+
+    var state = ScheduledStateSeries()
 
     init {
-        playingField.forEach {
-            instance.setBlock(it, Block.GLOWSTONE)
-        }
-
         globalEventHandler.addListener(PlayerLoginEvent::class.java) { event ->
             val player = event.player
             player.gameMode = GameMode.CREATIVE
@@ -41,14 +39,24 @@ class BlockPartyGame(val instance: InstanceContainer) {
                     .withLookAt(Pos(0.0, 64.0, 0.0))
             }
         }
+        addStates()
+        state.start()
+    }
+    private fun addStates() {
         state.add(WaitingState(this))
         state.add(RoundState(this))
         state.add(EndState(this))
-        state.start()
     }
 
     fun addRound() {
         state.addNext(RoundState(this))
+    }
+
+    fun restart() {
+        state.end()
+        state = ScheduledStateSeries()
+        addStates()
+        state.start()
     }
 
 
