@@ -1,8 +1,9 @@
-package com.simplymerlin.blockparty.state
+package com.simplymerlin.blockparty.phase
 
 import com.simplymerlin.blockparty.BlockPartyGame
 import com.simplymerlin.blockparty.util.Floor
 import com.simplymerlin.blockparty.util.FloorBlock
+import com.simplymerlin.core.state.GameState
 import com.simplymerlin.fsmchamp.State
 import com.simplymerlin.fsmchamp.StateSeries
 import net.kyori.adventure.key.Key
@@ -21,7 +22,7 @@ import net.minestom.server.event.player.PlayerMoveEvent
 import net.minestom.server.instance.block.Block
 import net.minestom.server.item.ItemStack
 
-class RoundState(val game: BlockPartyGame) : StateSeries() {
+class RoundPhase(val game: BlockPartyGame) : StateSeries() {
     
     val chosenBlock: FloorBlock = FloorBlock.values().random()
     
@@ -32,9 +33,9 @@ class RoundState(val game: BlockPartyGame) : StateSeries() {
     
     init {
         addAll(listOf(
-            GenerateState(this),
-            ChosenState(this),
-            EndState(this),
+            GeneratePhase(this),
+            ChosenPhase(this),
+            EndPhase(this),
         ))
     }
 
@@ -82,7 +83,7 @@ class RoundState(val game: BlockPartyGame) : StateSeries() {
         MinecraftServer.getGlobalEventHandler().removeChild(node)
     }
     
-    class GenerateState(private val round: RoundState) : GameState() {
+    class GeneratePhase(private val round: RoundPhase) : GameState() {
         override var time = 10
 
         override fun onStart() {
@@ -99,7 +100,7 @@ class RoundState(val game: BlockPartyGame) : StateSeries() {
         }
     }
 
-    class ChosenState(private val round: RoundState) : GameState() {
+    class ChosenPhase(private val round: RoundPhase) : GameState() {
         override var time = 5
 
         override fun onStart() {
@@ -125,7 +126,7 @@ class RoundState(val game: BlockPartyGame) : StateSeries() {
         }
     }
 
-    class EndState(private val round: RoundState) : State() {
+    class EndPhase(private val round: RoundPhase) : State() {
         override var time = 5
 
         override fun onStart() {

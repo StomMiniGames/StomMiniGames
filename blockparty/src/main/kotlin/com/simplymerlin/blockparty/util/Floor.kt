@@ -3,7 +3,7 @@ package com.simplymerlin.blockparty.util
 import net.minestom.server.coordinate.Point
 import net.minestom.server.instance.InstanceContainer
 
-enum class Floor : FloorType {
+enum class Floor {
 
     RANDOM {
         override fun applyFloor(floor: List<Point>, instance: InstanceContainer) {
@@ -31,10 +31,8 @@ enum class Floor : FloorType {
                 instance.setBlock(it, blocks[((it.blockX()*it.blockZ())/2).mod(blocks.size)].block)
             }
         }
-    },
+    };
 
-}
+    abstract fun applyFloor(floor: List<Point>, instance: InstanceContainer)
 
-interface FloorType {
-    fun applyFloor(floor: List<Point>, instance: InstanceContainer)
 }

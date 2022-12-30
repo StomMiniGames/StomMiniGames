@@ -1,4 +1,4 @@
-package com.simplymerlin.blockparty.state
+package com.simplymerlin.core.state
 
 import com.simplymerlin.fsmchamp.StateSeries
 import net.minestom.server.MinecraftServer

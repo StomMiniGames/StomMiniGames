@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.7.22"
     id("com.github.johnrengelman.shadow") version "7.1.0"
+    application
 }
 
 group = "com.simplymerlin"
@@ -14,7 +15,6 @@ repositories {
 dependencies {
     api("com.github.Minestom:Minestom:eb06ba8664")
     api("com.github.SimplyMerlin:FSMChamp:v1.0.3")
-    api(project(":core"))
 }
 
 

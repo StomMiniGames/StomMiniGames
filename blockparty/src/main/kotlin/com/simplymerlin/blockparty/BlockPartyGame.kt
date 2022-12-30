@@ -1,20 +1,19 @@
 package com.simplymerlin.blockparty
 
-import com.simplymerlin.blockparty.state.EndState
-import com.simplymerlin.blockparty.state.RoundState
-import com.simplymerlin.blockparty.state.ScheduledStateSeries
-import com.simplymerlin.blockparty.state.WaitingState
-import net.minestom.server.MinecraftServer
+import com.simplymerlin.blockparty.phase.RoundPhase
+import com.simplymerlin.blockparty.phase.WaitingState
+import com.simplymerlin.core.Minigame
+import com.simplymerlin.core.Server
+import com.simplymerlin.core.phase.EndPhase
+import com.simplymerlin.core.state.ScheduledStateSeries
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Pos
-import net.minestom.server.entity.GameMode
 import net.minestom.server.entity.Player
-import net.minestom.server.event.player.PlayerLoginEvent
 import net.minestom.server.instance.InstanceContainer
 
-class BlockPartyGame(val instance: InstanceContainer) {
+class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(instance, server) {
 
-    private val globalEventHandler = MinecraftServer.getGlobalEventHandler()
+    override val name = "BlockParty"
 
     val playingField = buildList<Point> {
         for (x in -16..16) {
@@ -28,36 +27,29 @@ class BlockPartyGame(val instance: InstanceContainer) {
 
     var state = ScheduledStateSeries()
 
-    init {
-        globalEventHandler.addListener(PlayerLoginEvent::class.java) { event ->
-            val player = event.player
-            player.gameMode = GameMode.CREATIVE
-            event.setSpawningInstance(instance)
-
-            playingField.random().add(0.0, 1.0, 0.0).let {
-                player.respawnPoint = (it as Pos).add(0.0, player.eyeHeight, 0.0)
-                    .withLookAt(Pos(0.0, 64.0, 0.0))
-            }
+    override fun start() {
+        super.start()
+        if (state.started) {
+            state.end()
+            state = ScheduledStateSeries()
         }
         addStates()
         state.start()
     }
+
+    override fun clean() {
+        super.clean()
+        alivePlayers.clear()
+    }
+
     private fun addStates() {
         state.add(WaitingState(this))
-        state.add(RoundState(this))
-        state.add(EndState(this))
+        state.add(RoundPhase(this))
+        state.add(EndPhase(this))
     }
 
     fun addRound() {
-        state.addNext(RoundState(this))
+        state.addNext(RoundPhase(this))
     }
-
-    fun restart() {
-        state.end()
-        state = ScheduledStateSeries()
-        addStates()
-        state.start()
-    }
-
 
 }
