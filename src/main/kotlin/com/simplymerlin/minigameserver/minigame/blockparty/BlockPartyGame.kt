@@ -25,7 +25,7 @@ class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(ins
 
     val alivePlayers: MutableList<Player> = mutableListOf()
 
-    var state = ScheduledStateSeries()
+    private var state = ScheduledStateSeries()
 
     override fun start() {
         super.start()

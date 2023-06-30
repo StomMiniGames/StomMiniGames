@@ -18,7 +18,7 @@ enum class Floor {
                 shuffle()
             }
             floor.forEach {
-                instance.setBlock(it, blocks[(it.blockX()-it.blockZ()).mod(blocks.size)].block)
+                instance.setBlock(it, blocks[(it.blockX() - it.blockZ()).mod(blocks.size)].block)
             }
         }
     },
@@ -28,7 +28,7 @@ enum class Floor {
                 shuffle()
             }
             floor.forEach {
-                instance.setBlock(it, blocks[((it.blockX()*it.blockZ())/2).mod(blocks.size)].block)
+                instance.setBlock(it, blocks[( (it.blockX() * it.blockZ()) / 2).mod(blocks.size)].block)
             }
         }
     };

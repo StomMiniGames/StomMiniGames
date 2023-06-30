@@ -29,7 +29,7 @@ class RoundPhase(val game: BlockPartyGame) : StateSeries() {
     val playingField = game.playingField
     val instance = game.instance
 
-    val node = EventNode.all(javaClass.name)
+    private val node = EventNode.all(javaClass.name)
     
     init {
         addAll(listOf(
