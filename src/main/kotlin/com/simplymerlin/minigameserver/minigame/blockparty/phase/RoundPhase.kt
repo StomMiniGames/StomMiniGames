@@ -51,7 +51,7 @@ class RoundPhase(val game: BlockPartyGame) : StateSeries() {
                 ))
                 player.teleport(Pos(0.0, 70.0, 0.0))
 
-                Audiences.all().sendMessage(Component.text("${player.name} has died!"))
+                Audiences.all().sendMessage(Component.text("${player.username} has died!"))
 
                 player.gameMode = GameMode.SPECTATOR
                 if (game.alivePlayers.size == 0) {
