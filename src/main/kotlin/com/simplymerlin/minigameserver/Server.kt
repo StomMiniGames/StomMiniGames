@@ -11,10 +11,15 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.adventure.audience.Audiences
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
+import net.minestom.server.event.EventListener
 import net.minestom.server.event.player.PlayerDisconnectEvent
 import net.minestom.server.event.player.PlayerLoginEvent
+import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.block.Block
+import net.minestom.server.inventory.Inventory
+import net.minestom.server.inventory.InventoryType
+import net.minestom.server.item.ItemStack
 
 class Server {
 
@@ -73,6 +78,31 @@ class Server {
                     .append(player.name.color(NamedTextColor.GRAY))
             )
         }
+
+        globalEventHandler.addListener(
+            EventListener.builder(PlayerSpawnEvent::class.java)
+                .filter {
+                return@filter MinecraftServer.getConnectionManager().onlinePlayers.isNotEmpty()
+                }
+                .filter {
+                    it.isFirstSpawn
+                }
+                .handler {
+                val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
+                games.forEachIndexed { i, game ->
+                    inventory.setItemStack(
+                        i,
+                        ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(listOf(game.displayDescription))
+                    )
+                    inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
+                        if (slot != i) return@addInventoryCondition
+                        game.start()
+                        it.player.closeInventory()
+                        inventoryConditionResult.isCancel = false
+                    }
+                }
+                it.player.openInventory(inventory)
+            }.build())
     }
 
     fun teleportAllToHub() {
