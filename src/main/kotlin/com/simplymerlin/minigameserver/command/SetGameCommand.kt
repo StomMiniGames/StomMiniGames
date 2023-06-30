@@ -1,11 +1,11 @@
 package com.simplymerlin.minigameserver.command
 
-import com.simplymerlin.minigameserver.ServerImpl
+import com.simplymerlin.minigameserver.Server
 import net.minestom.server.command.builder.Command
 import net.minestom.server.command.builder.arguments.ArgumentType
 
 class SetGameCommand(
-    val server: ServerImpl
+    private val server: Server
 ) : Command("setgame") {
 
     init {
