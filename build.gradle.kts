@@ -40,4 +40,12 @@ tasks {
             attributes["Main-Class"] = application.mainClass
         }
     }
+
+    distTar {
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
+
+    distZip {
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
 }
