@@ -11,7 +11,7 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
 
     abstract val displayName: Component
 
-    abstract val displayDescription: Component
+    abstract val displayDescription: List<Component>
 
     abstract val icon: Material
 

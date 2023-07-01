@@ -7,6 +7,8 @@ import com.simplymerlin.minigameserver.core.state.ScheduledStateSeries
 import com.simplymerlin.minigameserver.minigame.blockparty.phase.RoundPhase
 import com.simplymerlin.minigameserver.minigame.blockparty.phase.WaitingState
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.Player
@@ -17,8 +19,10 @@ class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(ins
 
     override val name = "BlockParty"
 
-    override val displayName: Component = Component.text("Block Party")
-    override val displayDescription: Component = Component.text("Stand on the right coloured block")
+    override val displayName: Component = Component.text("Block Party", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false)
+    override val displayDescription: List<Component> = listOf(
+        Component.text("Stand on the right coloured block", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+    )
     override val icon: Material = Material.MAGENTA_CONCRETE
 
     val playingField = buildList<Point> {

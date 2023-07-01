@@ -92,7 +92,7 @@ class Server {
                 games.forEachIndexed { i, game ->
                     inventory.setItemStack(
                         i,
-                        ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(listOf(game.displayDescription))
+                        ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(game.displayDescription)
                     )
                     inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
                         if (slot != i) return@addInventoryCondition
