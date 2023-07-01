@@ -1,9 +1,11 @@
 package com.simplymerlin.minigameserver
 
-import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
 import com.simplymerlin.minigameserver.core.Minigame
+import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
@@ -11,10 +13,18 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.adventure.audience.Audiences
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
+import net.minestom.server.event.EventListener
 import net.minestom.server.event.player.PlayerDisconnectEvent
 import net.minestom.server.event.player.PlayerLoginEvent
+import net.minestom.server.event.player.PlayerSpawnEvent
+import net.minestom.server.event.player.PlayerUseItemEvent
 import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.block.Block
+import net.minestom.server.inventory.Inventory
+import net.minestom.server.inventory.InventoryType
+import net.minestom.server.item.ItemStack
+import net.minestom.server.item.Material
+import net.minestom.server.tag.Tag
 
 class Server {
 
@@ -53,6 +63,14 @@ class Server {
             event.setSpawningInstance(hub)
 
             player.respawnPoint = Pos(0.0, 65.0, 0.0)
+
+            player.inventory.itemInMainHand = ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
+                .withDisplayName(Component.text("Start", NamedTextColor.GREEN))
+                .withTag(Tag.String("handler_id"), "start_game")
+
+            if(MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
+                player.setTag(Tag.Boolean("leader"), true)
+            }
         }
 
         globalEventHandler.addListener(PlayerLoginEvent::class.java) {
@@ -73,6 +91,46 @@ class Server {
                     .append(player.name.color(NamedTextColor.GRAY))
             )
         }
+
+        globalEventHandler.addListener(
+            EventListener.builder(PlayerUseItemEvent::class.java)
+                .filter {
+                    !it.player.itemInMainHand.isAir
+                }
+                .filter {
+                    (it.player.itemInMainHand.getTag(Tag.String("handler_id")) ?: "null") == "start_game"
+                }
+                .handler {
+                    currentGame.start()
+                }.build()
+        )
+
+        globalEventHandler.addListener(
+            EventListener.builder(PlayerSpawnEvent::class.java)
+                .filter {
+                    it.player.getTag(Tag.Boolean("leader")) ?: false
+                }
+                .filter {
+                    it.spawnInstance == hub
+                }
+                .handler {
+                val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
+                games.forEachIndexed { i, game ->
+                    inventory.setItemStack(
+                        i,
+                        ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(game.displayDescription)
+                    )
+                    inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
+                        if (slot != i) return@addInventoryCondition
+                        currentGame = game
+                        it.player.closeInventory()
+                        it.player.sendMessage(game.displayName.append(Component.text(" has been selected", NamedTextColor.GREEN)))
+                        it.player.playSound(Sound.sound(Key.key("entity.experience_orb.pickup"), Sound.Source.NEUTRAL, 1f, 1f))
+                        inventoryConditionResult.isCancel = false
+                    }
+                }
+                it.player.openInventory(inventory)
+            }.build())
     }
 
     fun teleportAllToHub() {
