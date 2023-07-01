@@ -20,6 +20,7 @@ import net.minestom.server.instance.block.Block
 import net.minestom.server.inventory.Inventory
 import net.minestom.server.inventory.InventoryType
 import net.minestom.server.item.ItemStack
+import net.minestom.server.tag.Tag
 
 class Server {
 
@@ -58,6 +59,10 @@ class Server {
             event.setSpawningInstance(hub)
 
             player.respawnPoint = Pos(0.0, 65.0, 0.0)
+
+            if(MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
+                player.setTag(Tag.Boolean("leader"), true)
+            }
         }
 
         globalEventHandler.addListener(PlayerLoginEvent::class.java) {
@@ -82,10 +87,10 @@ class Server {
         globalEventHandler.addListener(
             EventListener.builder(PlayerSpawnEvent::class.java)
                 .filter {
-                return@filter MinecraftServer.getConnectionManager().onlinePlayers.isNotEmpty()
+                    it.player.getTag(Tag.Boolean("leader")) ?: false
                 }
                 .filter {
-                    it.isFirstSpawn
+                    it.spawnInstance == hub
                 }
                 .handler {
                 val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
