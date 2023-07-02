@@ -18,6 +18,7 @@ import net.minestom.server.event.player.PlayerDisconnectEvent
 import net.minestom.server.event.player.PlayerLoginEvent
 import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.event.player.PlayerUseItemEvent
+import net.minestom.server.event.server.ServerListPingEvent
 import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.block.Block
 import net.minestom.server.inventory.Inventory
@@ -50,6 +51,7 @@ class Server {
         hub.setBlock(0, 64, 0, Block.STONE)
 
         minecraftServer.start("0.0.0.0", 25565)
+        println("Startup complete")
     }
 
     fun start() {
@@ -57,6 +59,10 @@ class Server {
     }
 
     private fun initialiseEvents() {
+        globalEventHandler.addListener(ServerListPingEvent::class.java) {
+            val response = it.responseData
+            response.description = Component.text("So many minigames!", NamedTextColor.AQUA)
+        }
         globalEventHandler.addListener(PlayerLoginEvent::class.java) { event ->
             val player = event.player
             player.gameMode = GameMode.ADVENTURE
