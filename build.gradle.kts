@@ -19,7 +19,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.Minestom:Minestom:954e8b3915")
+    implementation("dev.hollowcube:minestom-ce:54e839e58a")
     implementation("com.github.SimplyMerlin:FSMChamp:v1.1.0")
 }
 
