@@ -19,6 +19,7 @@ import net.minestom.server.entity.GameMode
 import net.minestom.server.event.EventNode
 import net.minestom.server.event.player.PlayerDisconnectEvent
 import net.minestom.server.event.player.PlayerMoveEvent
+import net.minestom.server.instance.batch.AbsoluteBlockBatch
 import net.minestom.server.instance.block.Block
 import net.minestom.server.item.ItemStack
 
@@ -130,12 +131,15 @@ class RoundPhase(val game: BlockPartyGame) : StateSeries() {
         override var time = 5
 
         override fun onStart() {
+            val batch = AbsoluteBlockBatch()
             round.playingField.forEach {
                 if (round.instance.getBlock(it) != round.chosenBlock.block) {
-                    round.instance.setBlock(it, Block.AIR)
+                    batch.setBlock(it, Block.AIR)
                 }
             }
-            Audiences.all().playSound(Sound.sound(Key.key("entity.ender_dragon.shoot"), Sound.Source.MASTER, 1f, 1f))
+            batch.apply(round.instance) {
+                Audiences.all().playSound(Sound.sound(Key.key("entity.ender_dragon.shoot"), Sound.Source.MASTER, 1f, 1f))
+            }
         }
 
         override fun onUpdate() {
