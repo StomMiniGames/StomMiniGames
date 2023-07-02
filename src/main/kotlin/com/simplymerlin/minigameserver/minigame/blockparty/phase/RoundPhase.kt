@@ -138,9 +138,8 @@ class RoundPhase(val game: BlockPartyGame) : StateSeries() {
                 }
             }
             batch.apply(round.instance) {
-                println("Batch complete!")
+                Audiences.all().playSound(Sound.sound(Key.key("entity.ender_dragon.shoot"), Sound.Source.MASTER, 1f, 1f))
             }
-            Audiences.all().playSound(Sound.sound(Key.key("entity.ender_dragon.shoot"), Sound.Source.MASTER, 1f, 1f))
         }
 
         override fun onUpdate() {

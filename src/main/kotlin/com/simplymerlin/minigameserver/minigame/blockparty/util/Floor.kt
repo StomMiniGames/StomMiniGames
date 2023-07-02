@@ -12,9 +12,7 @@ enum class Floor {
             floor.forEach {
                 batch.setBlock(it, FloorBlock.values().random().block)
             }
-            batch.apply(instance) {
-                println("Batch place complete!")
-            }
+            batch.apply(instance) {}
         }
     },
     DIAGONAL {
@@ -26,9 +24,7 @@ enum class Floor {
             floor.forEach {
                 batch.setBlock(it, blocks[(it.blockX() - it.blockZ()).mod(blocks.size)].block)
             }
-            batch.apply(instance) {
-                println("Batch place complete!")
-            }
+            batch.apply(instance) {}
         }
     },
     BLOCKS {
@@ -40,9 +36,7 @@ enum class Floor {
             floor.forEach {
                 batch.setBlock(it, blocks[( (it.blockX() * it.blockZ()) / 2).mod(blocks.size)].block)
             }
-            batch.apply(instance) {
-                println("Batch place complete!")
-            }
+            batch.apply(instance) {}
         }
     };
 
