@@ -19,8 +19,8 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
     internal open val mapSelectionStrategy: MapSelectionStrategy = RandomMapSelectionStrategy()
 
     init {
-        println("worlds/${getEarlyName()}")
-        val mapFiles = ResourceNavigator.listResourceFilesOf("worlds/${getEarlyName()}")
+        println("worlds/${name}")
+        val mapFiles = ResourceNavigator.listResourceFilesOf("worlds/${name}")
             .filter { it.path.endsWith(".polar") }
         val mapFile = mapSelectionStrategy.selectMapFile(mapFiles)
         val loader = PolarLoader(mapFile.toPath())
@@ -38,7 +38,5 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
         if (running)
             return
     }
-
-    internal abstract fun getEarlyName(): String
 
 }
