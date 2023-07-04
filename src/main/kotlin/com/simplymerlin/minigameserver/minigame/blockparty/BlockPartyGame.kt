@@ -62,4 +62,9 @@ class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(ins
         state.addNext(RoundPhase(this))
     }
 
+
+    override fun getEarlyName(): String {
+        return name
+    }
+
 }
