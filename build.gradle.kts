@@ -40,6 +40,9 @@ tasks {
         manifest {
             attributes["Main-Class"] = application.mainClass
         }
+
+        duplicatesStrategy = DuplicatesStrategy.WARN
+        from(sourceSets.main.get().resources)
     }
 
     distTar {
