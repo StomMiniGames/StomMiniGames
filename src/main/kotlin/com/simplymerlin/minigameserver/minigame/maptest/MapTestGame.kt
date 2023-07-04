@@ -8,9 +8,8 @@ import net.minestom.server.coordinate.Pos
 import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.item.Material
 
-class MapTestGame(instance: InstanceContainer, server: Server): Minigame(instance, server) {
+class MapTestGame(instance: InstanceContainer, server: Server): Minigame(instance, server, "maptest") {
 
-	override val name: String = "maptest"
 	override val displayName: Component = Component.text("TEST MAP!!")
 	override val displayDescription: List<Component> = listOf(Component.text("An example of map loading"))
 	override val icon: Material = Material.FILLED_MAP
@@ -22,7 +21,4 @@ class MapTestGame(instance: InstanceContainer, server: Server): Minigame(instanc
 		}
 	}
 
-	override fun getEarlyName(): String {
-		return name
-	}
 }

@@ -9,9 +9,8 @@ import net.kyori.adventure.text.Component
 import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.item.Material
 
-abstract class Minigame(val instance: InstanceContainer, val server: Server) {
+abstract class Minigame(val instance: InstanceContainer, val server: Server, val name: String) {
 
-    abstract val name: String
     abstract val displayName: Component
     abstract val displayDescription: List<Component>
     abstract val icon: Material
@@ -19,12 +18,13 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
     internal open val mapSelectionStrategy: MapSelectionStrategy = RandomMapSelectionStrategy()
 
     init {
-        println("worlds/${getEarlyName()}")
-        val mapFiles = ResourceNavigator.listResourceFilesOf("worlds/${getEarlyName()}")
+        val mapFiles = ResourceNavigator.listResourceFilesOf("worlds/${name.lowercase()}")
             .filter { it.path.endsWith(".polar") }
         val mapFile = mapSelectionStrategy.selectMapFile(mapFiles)
-        val loader = PolarLoader(mapFile.toPath())
-        instance.chunkLoader = loader
+        if(mapFile != null) {
+            val loader = PolarLoader(mapFile.toPath())
+            instance.chunkLoader = loader
+        }
     }
 
     var running = false
@@ -38,7 +38,5 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
         if (running)
             return
     }
-
-    internal abstract fun getEarlyName(): String
 
 }

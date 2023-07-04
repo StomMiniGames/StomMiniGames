@@ -15,9 +15,7 @@ import net.minestom.server.entity.Player
 import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.item.Material
 
-class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(instance, server) {
-
-    override val name = "BlockParty"
+class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(instance, server, "BlockParty") {
 
     override val displayName: Component = Component.text("Block Party", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false)
     override val displayDescription: List<Component> = listOf(
@@ -60,11 +58,6 @@ class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(ins
 
     fun addRound() {
         state.addNext(RoundPhase(this))
-    }
-
-
-    override fun getEarlyName(): String {
-        return name
     }
 
 }

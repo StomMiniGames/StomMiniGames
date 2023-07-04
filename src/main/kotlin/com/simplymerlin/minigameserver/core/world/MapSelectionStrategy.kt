@@ -4,5 +4,5 @@ import java.io.File
 
 interface MapSelectionStrategy {
 
-	fun selectMapFile(list: List<File>): File
+	fun selectMapFile(list: List<File>): File?
 }
