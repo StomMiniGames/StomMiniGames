@@ -17,7 +17,8 @@ import net.minestom.server.item.Material
 
 class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(instance, server) {
 
-    override val name = "BlockParty"
+    override val name
+        get() = "BlockParty"
 
     override val displayName: Component = Component.text("Block Party", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false)
     override val displayDescription: List<Component> = listOf(
