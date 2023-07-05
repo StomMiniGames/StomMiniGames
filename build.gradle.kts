@@ -43,6 +43,10 @@ tasks {
         archiveFileName.set("server-noshadow-$version.jar")
     }
 
+    named<JavaExec>("run") {
+        environment("LOG_LEVEL", "DEBUG")
+    }
+
     build { dependsOn(shadowJar) }
     distTar { duplicatesStrategy = DuplicatesStrategy.WARN }
     distZip { duplicatesStrategy = DuplicatesStrategy.WARN }
