@@ -93,11 +93,9 @@ class RoundPhase(val game: BlockPartyGame) : StateSeries() {
         }
 
         override fun onUpdate() {
-            round.game.logger.debug(time.toString())
         }
 
         override fun onEnd() {
-            
         }
     }
 
