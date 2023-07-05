@@ -1,13 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
-}
-
-tasks {
-    jar {
-        archiveFileName.set("server.jar")
-    }
 }
 
 group = "com.simplymerlin"
@@ -21,15 +15,11 @@ repositories {
 dependencies {
     implementation("dev.hollowcube:minestom-ce:54e839e58a")
     implementation("com.github.SimplyMerlin:FSMChamp:v1.1.0")
-
-    // Logback
+    implementation("dev.hollowcube:polar:1.3.0")
+    
+     // Logback
     implementation("ch.qos.logback:logback-core:1.4.5")
     implementation("ch.qos.logback:logback-classic:1.4.5")
-}
-
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
 }
 
 application {
@@ -37,23 +27,23 @@ application {
 }
 
 tasks {
-    build { dependsOn(shadowJar) }
+    shadowJar {
+        manifest {
+            attributes["Main-Class"] = application.mainClass
+        }
+        archiveFileName.set("server-$version.jar")
+        from(sourceSets.main.get().resources)
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
 
     jar {
         manifest {
             attributes["Main-Class"] = application.mainClass
         }
+        archiveFileName.set("server-noshadow-$version.jar")
     }
 
-    named<JavaExec>("run") {
-        environment("LOG_LEVEL", "DEBUG")
-    }
-
-    distTar {
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
-
-    distZip {
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
+    build { dependsOn(shadowJar) }
+    distTar { duplicatesStrategy = DuplicatesStrategy.WARN }
+    distZip { duplicatesStrategy = DuplicatesStrategy.WARN }
 }

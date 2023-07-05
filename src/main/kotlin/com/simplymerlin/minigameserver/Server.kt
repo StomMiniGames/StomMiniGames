@@ -6,6 +6,7 @@ import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
+import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
@@ -41,8 +42,9 @@ class Server {
 
     private val hub = instanceManager.createInstanceContainer(FullBrightDimension.dimension)
 
-    val games = listOf<Minigame>(
-        BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this)
+    val games = listOf(
+        BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
+        MapTestGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this)
     )
 
     var currentGame: Minigame = games[0]
