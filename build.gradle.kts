@@ -1,13 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
-}
-
-tasks {
-    jar {
-        archiveFileName.set("server.jar")
-    }
 }
 
 group = "com.simplymerlin"
@@ -24,32 +18,28 @@ dependencies {
     implementation("dev.hollowcube:polar:1.3.0")
 }
 
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-}
-
 application {
     mainClass.set("com.simplymerlin.minigameserver.MainKt")
 }
 
 tasks {
-    build { dependsOn(shadowJar) }
+    shadowJar {
+        manifest {
+            attributes["Main-Class"] = application.mainClass
+        }
+        archiveFileName.set("server-$version.jar")
+        from(sourceSets.main.get().resources)
+        duplicatesStrategy = DuplicatesStrategy.WARN
+    }
 
     jar {
         manifest {
             attributes["Main-Class"] = application.mainClass
         }
-
-        duplicatesStrategy = DuplicatesStrategy.WARN
-        from(sourceSets.main.get().resources)
+        archiveFileName.set("server-noshadow-$version.jar")
     }
 
-    distTar {
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
-
-    distZip {
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
+    build { dependsOn(shadowJar) }
+    distTar { duplicatesStrategy = DuplicatesStrategy.WARN }
+    distZip { duplicatesStrategy = DuplicatesStrategy.WARN }
 }
