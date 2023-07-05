@@ -18,20 +18,17 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
 
     internal open val mapSelectionStrategy: MapSelectionStrategy = RandomMapSelectionStrategy()
 
-    init {
-        val mapFiles = ResourceNavigator.listResourceFilesOf("worlds/${name}")
+    var running = false
+    open fun start() {
+        if (running)
+            return
+        val mapFiles = ResourceNavigator.listResourceFilesOf("worlds/$name")
             .filter { it.path.endsWith(".polar") }
         val mapFile = mapSelectionStrategy.selectMapFile(mapFiles)
         if(mapFile != null) {
             val loader = PolarLoader(mapFile.toPath())
             instance.chunkLoader = loader
         }
-    }
-
-    var running = false
-    open fun start() {
-        if (running)
-            return
         running = true
     }
 
