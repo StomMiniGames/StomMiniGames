@@ -5,6 +5,7 @@ import com.simplymerlin.minigameserver.command.StartCommand
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
+import io.github.bloepiloepi.pvp.PvpExtension
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
@@ -45,6 +46,7 @@ class Server {
 
     init {
         MojangAuth.init()
+        PvpExtension.init()
         initialiseEvents()
 
         MinecraftServer.getCommandManager().register(StartCommand(this))
@@ -61,6 +63,7 @@ class Server {
     }
 
     private fun initialiseEvents() {
+        globalEventHandler.addChild(PvpExtension.events())
         globalEventHandler.addListener(ServerListPingEvent::class.java) {
             val response = it.responseData
             response.description = Component.text("So many minigames!", NamedTextColor.AQUA)
