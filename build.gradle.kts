@@ -4,12 +4,6 @@ plugins {
     application
 }
 
-tasks {
-    jar {
-        archiveFileName.set("server.jar")
-    }
-}
-
 group = "com.simplymerlin"
 version = "1.0-SNAPSHOT"
 
@@ -23,29 +17,27 @@ dependencies {
     implementation("com.github.SimplyMerlin:FSMChamp:v1.1.0")
 }
 
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
-}
-
 application {
     mainClass.set("com.simplymerlin.minigameserver.MainKt")
 }
 
 tasks {
-    build { dependsOn(shadowJar) }
+
+    shadowJar {
+        manifest {
+            attributes["Main-Class"] = application.mainClass
+        }
+        archiveFileName.set("server-$version.jar")
+    }
 
     jar {
         manifest {
             attributes["Main-Class"] = application.mainClass
         }
+        archiveFileName.set("server-noshadow-$version.jar")
     }
 
-    distTar {
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
-
-    distZip {
-        duplicatesStrategy = DuplicatesStrategy.WARN
-    }
+    build { dependsOn(shadowJar) }
+    distTar { duplicatesStrategy = DuplicatesStrategy.WARN }
+    distZip { duplicatesStrategy = DuplicatesStrategy.WARN }
 }
