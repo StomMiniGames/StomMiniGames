@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.22"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     application
 }
@@ -22,7 +22,6 @@ application {
 }
 
 tasks {
-
     shadowJar {
         manifest {
             attributes["Main-Class"] = application.mainClass
