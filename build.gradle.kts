@@ -45,6 +45,10 @@ tasks {
         }
     }
 
+    named<JavaExec>("run") {
+        environment("LOG_LEVEL", "DEBUG")
+    }
+
     distTar {
         duplicatesStrategy = DuplicatesStrategy.WARN
     }

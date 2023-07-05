@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
-import com.simplymerlin.minigameserver.core.LoggerManager
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import net.kyori.adventure.key.Key
@@ -53,7 +52,7 @@ class Server {
         }
 
     init {
-        val level = Level.valueOf(System.getenv("LOGGER_LEVEL") ?: "INFO")
+        val level = Level.valueOf(System.getenv("LOG_LEVEL") ?: "INFO")
         val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
         rootLogger.level = level
 
