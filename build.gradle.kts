@@ -16,6 +16,10 @@ dependencies {
     implementation("dev.hollowcube:minestom-ce:54e839e58a")
     implementation("com.github.SimplyMerlin:FSMChamp:v1.1.0")
     implementation("dev.hollowcube:polar:1.3.0")
+    
+     // Logback
+    implementation("ch.qos.logback:logback-core:1.4.5")
+    implementation("ch.qos.logback:logback-classic:1.4.5")
 }
 
 application {
