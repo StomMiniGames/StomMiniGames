@@ -15,6 +15,7 @@ repositories {
 dependencies {
     implementation("dev.hollowcube:minestom-ce:54e839e58a")
     implementation("com.github.SimplyMerlin:FSMChamp:v1.1.0")
+    implementation("dev.hollowcube:polar:1.3.0")
 }
 
 application {
@@ -27,6 +28,8 @@ tasks {
             attributes["Main-Class"] = application.mainClass
         }
         archiveFileName.set("server-$version.jar")
+        from(sourceSets.main.get().resources)
+        duplicatesStrategy = DuplicatesStrategy.WARN
     }
 
     jar {
