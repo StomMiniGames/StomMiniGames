@@ -19,6 +19,9 @@ class EndPhase(val minigame: Minigame) : GameState() {
         minigame.running = false
         minigame.clean()
         minigame.server.teleportAllToHub()
+        minigame.instance.chunks.forEach {
+            minigame.instance.unloadChunk(it)
+        }
     }
 
 }
