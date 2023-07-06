@@ -41,7 +41,7 @@ class Server {
     val games = listOf(
         BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
         OneInTheChamberGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
-        MapTestGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this)
+        MapTestGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
     )
 
     var currentGame: Minigame = games[0]

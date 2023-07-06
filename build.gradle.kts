@@ -17,6 +17,7 @@ dependencies {
     implementation("com.github.SimplyMerlin:FSMChamp:v1.1.0")
     implementation("com.github.emortalmc:MinestomPvP:6aefcba403")
     implementation("dev.hollowcube:polar:1.3.0")
+    implementation("net.kyori:adventure-text-minimessage:4.12.0")
 }
 
 
