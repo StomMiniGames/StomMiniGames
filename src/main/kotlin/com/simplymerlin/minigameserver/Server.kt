@@ -93,6 +93,10 @@ class Server {
 
             player.respawnPoint = Pos(0.0, 65.0, 0.0)
 
+            player.inventory.itemInMainHand = ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
+                .withDisplayName(Component.text("Start", NamedTextColor.GREEN))
+                .withTag(Tag.String("handler_id"), "start_game")
+
             if(MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
                 player.setTag(Tag.Boolean("leader"), true)
             }
@@ -139,25 +143,21 @@ class Server {
                     it.spawnInstance == hub
                 }
                 .handler {
-                    it.player.inventory.setItemStack(0, ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
-                        .withDisplayName(Component.text("Start", NamedTextColor.GREEN))
-                        .withTag(Tag.String("handler_id"), "start_game"))
-
-                    val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
-                    games.forEachIndexed { i, game ->
-                        inventory.setItemStack(
-                            i,
-                            ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(game.displayDescription)
-                        )
-                        inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
-                            if (slot != i) return@addInventoryCondition
-                            currentGame = game
-                            it.player.closeInventory()
-                            it.player.sendMessage(game.displayName.append(Component.text(" has been selected", NamedTextColor.GREEN)))
-                            it.player.playSound(Sound.sound(Key.key("entity.experience_orb.pickup"), Sound.Source.NEUTRAL, 1f, 1f))
-                            inventoryConditionResult.isCancel = false
-                        }
+                val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
+                games.forEachIndexed { i, game ->
+                    inventory.setItemStack(
+                        i,
+                        ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(game.displayDescription)
+                    )
+                    inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
+                        if (slot != i) return@addInventoryCondition
+                        currentGame = game
+                        it.player.closeInventory()
+                        it.player.sendMessage(game.displayName.append(Component.text(" has been selected", NamedTextColor.GREEN)))
+                        it.player.playSound(Sound.sound(Key.key("entity.experience_orb.pickup"), Sound.Source.NEUTRAL, 1f, 1f))
+                        inventoryConditionResult.isCancel = false
                     }
+                }
                 it.player.openInventory(inventory)
             }.build())
     }
