@@ -6,10 +6,14 @@ import com.simplymerlin.minigameserver.core.world.RandomMapSelectionStrategy
 import com.simplymerlin.minigameserver.core.world.ResourceNavigator
 import net.hollowcube.polar.PolarLoader
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
+import net.minestom.server.MinecraftServer
 import net.minestom.server.instance.InstanceContainer
 import net.minestom.server.item.Material
 
 abstract class Minigame(val instance: InstanceContainer, val server: Server) {
+
+    internal val logger = ComponentLogger.logger(this::class.java)
 
     abstract val name: String
     abstract val displayName: Component
@@ -22,6 +26,9 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
     open fun start() {
         if (running)
             return
+
+        MinecraftServer.getConnectionManager().onlinePlayers.forEach { it.inventory.clear() }
+
         val mapFiles = ResourceNavigator.listResourceFilesOf("worlds/$name")
             .filter { it.path.endsWith(".polar") }
         val mapFile = mapSelectionStrategy.selectMapFile(mapFiles)
@@ -29,6 +36,8 @@ abstract class Minigame(val instance: InstanceContainer, val server: Server) {
             val loader = PolarLoader(mapFile.toPath())
             instance.chunkLoader = loader
         }
+
+        logger.info("Starting $name")
         running = true
     }
 

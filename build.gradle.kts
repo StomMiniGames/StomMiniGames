@@ -18,11 +18,10 @@ dependencies {
     implementation("com.github.emortalmc:MinestomPvP:6aefcba403")
     implementation("dev.hollowcube:polar:1.3.0")
     implementation("net.kyori:adventure-text-minimessage:4.12.0")
-}
-
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
+    
+    // Logback
+    implementation("ch.qos.logback:logback-core:1.4.5")
+    implementation("ch.qos.logback:logback-classic:1.4.5")
 }
 
 application {
@@ -44,6 +43,10 @@ tasks {
             attributes["Main-Class"] = application.mainClass
         }
         archiveFileName.set("server-noshadow-$version.jar")
+    }
+
+    named<JavaExec>("run") {
+        environment("LOG_LEVEL", "DEBUG")
     }
 
     build { dependsOn(shadowJar) }

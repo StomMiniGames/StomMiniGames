@@ -1,5 +1,7 @@
 package com.simplymerlin.minigameserver
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
 import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
 import com.simplymerlin.minigameserver.core.Minigame
@@ -12,6 +14,7 @@ import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minestom.server.MinecraftServer
 import net.minestom.server.adventure.audience.Audiences
 import net.minestom.server.coordinate.Pos
@@ -29,8 +32,11 @@ import net.minestom.server.inventory.InventoryType
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.tag.Tag
+import org.slf4j.LoggerFactory
 
 class Server {
+
+    private val logger = ComponentLogger.logger(this::class.java)
 
     private val minecraftServer  = MinecraftServer.init()
     private val instanceManager = MinecraftServer.getInstanceManager()
@@ -45,19 +51,33 @@ class Server {
     )
 
     var currentGame: Minigame = games[0]
+        set(value) {
+            field = value
+            logger.info("${field.name} has been selected.")
+        }
 
     init {
+        val level = Level.valueOf(System.getenv("LOG_LEVEL") ?: "INFO")
+        val rootLogger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
+        rootLogger.level = level
+
+        logger.info("Stomminigames is starting up...")
+        logger.info("Stomminigames is running on ${MinecraftServer.VERSION_NAME} (${MinecraftServer.PROTOCOL_VERSION}).")
+        logger.info("${games.size} minigames have been found.")
+        val startTime = System.currentTimeMillis()
         MojangAuth.init()
         PvpExtension.init()
         initialiseEvents()
 
+        logger.info("Registering commands.")
         MinecraftServer.getCommandManager().register(StartCommand(this))
         MinecraftServer.getCommandManager().register(SetGameCommand(this))
 
+        logger.info("Setting up hub.")
         hub.setBlock(0, 64, 0, Block.STONE)
 
         minecraftServer.start("0.0.0.0", 25565)
-        println("Startup complete")
+        logger.info("Startup complete in ${System.currentTimeMillis() - startTime}ms")
     }
 
     fun start() {
@@ -65,6 +85,7 @@ class Server {
     }
 
     private fun initialiseEvents() {
+        logger.info("Registering events.")
         globalEventHandler.addChild(PvpExtension.events())
         globalEventHandler.addListener(ServerListPingEvent::class.java) {
             val response = it.responseData
@@ -76,10 +97,6 @@ class Server {
             event.setSpawningInstance(hub)
 
             player.respawnPoint = Pos(0.0, 65.0, 0.0)
-
-            player.inventory.itemInMainHand = ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
-                .withDisplayName(Component.text("Start", NamedTextColor.GREEN))
-                .withTag(Tag.String("handler_id"), "start_game")
 
             if(MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
                 player.setTag(Tag.Boolean("leader"), true)
@@ -127,21 +144,25 @@ class Server {
                     it.spawnInstance == hub
                 }
                 .handler {
-                val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
-                games.forEachIndexed { i, game ->
-                    inventory.setItemStack(
-                        i,
-                        ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(game.displayDescription)
-                    )
-                    inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
-                        if (slot != i) return@addInventoryCondition
-                        currentGame = game
-                        it.player.closeInventory()
-                        it.player.sendMessage(game.displayName.append(Component.text(" has been selected", NamedTextColor.GREEN)))
-                        it.player.playSound(Sound.sound(Key.key("entity.experience_orb.pickup"), Sound.Source.NEUTRAL, 1f, 1f))
-                        inventoryConditionResult.isCancel = false
+                    it.player.inventory.setItemStack(0, ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
+                        .withDisplayName(Component.text("Start", NamedTextColor.GREEN))
+                        .withTag(Tag.String("handler_id"), "start_game"))
+
+                    val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
+                    games.forEachIndexed { i, game ->
+                        inventory.setItemStack(
+                            i,
+                            ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(game.displayDescription)
+                        )
+                        inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
+                            if (slot != i) return@addInventoryCondition
+                            currentGame = game
+                            it.player.closeInventory()
+                            it.player.sendMessage(game.displayName.append(Component.text(" has been selected", NamedTextColor.GREEN)))
+                            it.player.playSound(Sound.sound(Key.key("entity.experience_orb.pickup"), Sound.Source.NEUTRAL, 1f, 1f))
+                            inventoryConditionResult.isCancel = false
+                        }
                     }
-                }
                 it.player.openInventory(inventory)
             }.build())
     }
