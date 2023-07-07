@@ -82,7 +82,7 @@ class GamePhase(private val game: OneInTheChamberGame) : GameState() {
     }
 
     private fun sendDeathMessage(victim: Player, killer: Player?, damageType: CustomDamageType) {
-        val skull = Component.text("☠", NamedTextColor.RED).append(Component.space())
+        val skull = Component.text("☠", NamedTextColor.RED)
 
         val miniMessage: String
 
@@ -119,11 +119,11 @@ class GamePhase(private val game: OneInTheChamberGame) : GameState() {
             Placeholder.component("killer", killer?.name?.color(NamedTextColor.GOLD) ?: Component.empty()),
             ).color(NamedTextColor.GRAY)
 
-        val component = Component.text()
-            .append(skull)
-            .append(Component.space())
-            .append(message)
-            .build()
+        val component = Component.text().append(
+            skull,
+            Component.space(),
+            message
+        ).build()
 
         game.instance.sendMessage(component)
     }
@@ -167,11 +167,11 @@ class GamePhase(private val game: OneInTheChamberGame) : GameState() {
     private fun updateLines() {
         var i = 1
         game.playerData.values.sortedByDescending { it.score }.take(14).forEach {
-            val text = Component.text()
-                .append(it.player.name.color(NamedTextColor.GOLD))
-                .append(Component.text(": ", NamedTextColor.GRAY))
-                .append(Component.text(it.score, NamedTextColor.GOLD))
-                .build()
+            val text = Component.text().append(
+                it.player.name.color(NamedTextColor.GOLD),
+                Component.text(": ", NamedTextColor.GRAY),
+                Component.text(it.score, NamedTextColor.GOLD)
+            ).build()
             sidebar.updateLineContent(i.toString(), text)
             i++
         }
