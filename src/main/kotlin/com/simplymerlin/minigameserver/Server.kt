@@ -7,6 +7,7 @@ import com.simplymerlin.minigameserver.command.StartCommand
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
+import com.simplymerlin.minigameserver.minigame.spleef.SpleefGame
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
@@ -44,6 +45,7 @@ class Server {
 
     val games = listOf(
         BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
+        SpleefGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
         MapTestGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this)
     )
 
