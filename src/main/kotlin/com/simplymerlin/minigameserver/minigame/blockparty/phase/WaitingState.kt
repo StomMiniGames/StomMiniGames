@@ -20,16 +20,15 @@ class WaitingState(private val game: BlockPartyGame) : GameState() {
             game.instance.loadChunk(it)
             batch.setBlock(it, Block.GLOWSTONE)
         }
-        batch.apply(game.instance) {
-            game.alivePlayers.addAll(MinecraftServer.getConnectionManager().onlinePlayers)
-            MinecraftServer.getConnectionManager().onlinePlayers.forEach{
-                it.gameMode = GameMode.ADVENTURE
-                game.playingField.random().add(0.0, 1.0, 0.0).let {point ->
-                    it.setInstance(game.instance, (point as Pos).withLookAt(Pos(0.0, 64.0, 0.0)))
-                }
+        batch.apply(game.instance) {}
+        game.alivePlayers.addAll(MinecraftServer.getConnectionManager().onlinePlayers)
+        MinecraftServer.getConnectionManager().onlinePlayers.forEach{
+            it.gameMode = GameMode.ADVENTURE
+            game.playingField.random().add(0.0, 1.0, 0.0).let {point ->
+                it.setInstance(game.instance, (point as Pos).withLookAt(Pos(0.0, 64.0, 0.0)))
             }
-            Audiences.all().sendMessage(Component.text("Starting soon..."))
         }
+        Audiences.all().sendMessage(Component.text("Starting soon..."))
     }
 
     override fun onUpdate() {
