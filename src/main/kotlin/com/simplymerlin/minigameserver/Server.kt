@@ -86,7 +86,6 @@ class Server {
 
     private fun initialiseEvents() {
         logger.info("Registering events.")
-        globalEventHandler.addChild(PvpExtension.events())
         globalEventHandler.addListener(ServerListPingEvent::class.java) {
             val response = it.responseData
             response.description = Component.text("So many minigames!", NamedTextColor.AQUA)
