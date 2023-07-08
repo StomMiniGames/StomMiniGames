@@ -4,7 +4,6 @@ import com.simplymerlin.minigameserver.core.cancel
 import com.simplymerlin.minigameserver.core.state.GameState
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
 import io.github.bloepiloepi.pvp.PvpExtension
-import io.github.bloepiloepi.pvp.config.*
 import io.github.bloepiloepi.pvp.damage.CustomDamageType
 import io.github.bloepiloepi.pvp.events.EquipmentDamageEvent
 import io.github.bloepiloepi.pvp.events.FinalDamageEvent
