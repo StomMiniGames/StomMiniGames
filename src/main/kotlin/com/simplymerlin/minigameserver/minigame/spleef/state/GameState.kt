@@ -21,6 +21,7 @@ import net.minestom.server.event.player.PlayerMoveEvent
 import net.minestom.server.event.player.PlayerStartDiggingEvent
 import net.minestom.server.event.player.PlayerUseItemEvent
 import net.minestom.server.instance.block.Block
+import net.minestom.server.inventory.TransactionOption
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.particle.Particle
@@ -44,7 +45,8 @@ class GameState(private val game: SpleefGame) : GameState() {
 					it.itemStack.material() == Material.SNOWBALL
 				}
 				.handler {
-					game.logger.debug("Projectile!")
+					it.isCancelled = true
+					it.player.inventory.takeItemStack(it.itemStack.withAmount(1), TransactionOption.ALL)
 					val projectile = EntityProjectile(it.player, EntityType.SNOWBALL)
 					projectile.instance = game.instance
 					projectile.velocity = it.player.position.direction().normalize().mul(SNOWBALL_VELOCITY)
