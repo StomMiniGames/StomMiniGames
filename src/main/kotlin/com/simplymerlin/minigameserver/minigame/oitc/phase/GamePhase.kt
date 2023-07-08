@@ -5,7 +5,6 @@ import com.simplymerlin.minigameserver.core.state.GameState
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
 import io.github.bloepiloepi.pvp.PvpExtension
 import io.github.bloepiloepi.pvp.damage.CustomDamageType
-import io.github.bloepiloepi.pvp.events.EntityPreDeathEvent
 import io.github.bloepiloepi.pvp.events.FinalDamageEvent
 import io.github.bloepiloepi.pvp.events.PickupEntityEvent
 import io.github.bloepiloepi.pvp.events.ProjectileHitEvent.ProjectileBlockHitEvent
@@ -93,32 +92,24 @@ class GamePhase(private val game: OneInTheChamberGame) : GameState() {
     private fun sendDeathMessage(victim: Player, killer: Player?, damageType: CustomDamageType) {
         val skull = Component.text("☠", NamedTextColor.RED)
 
-        val miniMessage: String
-
-        if (killer == null) {
-            miniMessage = if (damageType.isOutOfWorld) {
-                "<victim> fell out of the world."
-            } else if (damageType.isProjectile) {
-                "<victim> got shot."
-            } else {
-                "<victim> died."
+        val miniMessage = if (killer == null) {
+            when {
+                damageType.isOutOfWorld -> "<victim> fell out of the world."
+                damageType.isProjectile -> "<victim> got shot."
+                else -> "<victim> died."
             }
         } else {
             if (victim == killer) {
-                miniMessage = if (damageType.isOutOfWorld) {
-                    "<victim> jumped into the void."
-                } else if (damageType.isProjectile) {
-                    "<victim> shot themselves."
-                } else {
-                    "<victim> killed themselves."
+                when {
+                    damageType.isOutOfWorld -> "<victim> jumped into the void."
+                    damageType.isProjectile -> "<victim> shot themselves."
+                    else -> "<victim> killed themselves."
                 }
             } else {
-                miniMessage = if (damageType.isOutOfWorld) {
-                    "<victim> got thrown in the void by <killer>."
-                } else if (damageType.isProjectile) {
-                    "<victim> got shot by <killer>."
-                } else {
-                    "<victim> got killed by <killer>."
+                when {
+                    damageType.isOutOfWorld -> "<victim> got thrown in the void by <killer>."
+                    damageType.isProjectile -> "<victim> got shot by <killer>."
+                    else -> "<victim> got killed by <killer>."
                 }
             }
         }
