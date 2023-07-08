@@ -20,8 +20,8 @@ import net.minestom.server.item.Material
 class OneInTheChamberGame(instance: InstanceContainer, server: Server) : Minigame(instance, server) {
     override val name
         get() = "One In The Chamber"
-    override val displayName = Component.text("One In The Chamber", NamedTextColor.RED, TextDecoration.BOLD)
-    override val displayDescription = listOf(Component.text("Beat your friends in some classic OITC!", NamedTextColor.RED))
+    override val displayName = Component.text("One In The Chamber", NamedTextColor.RED)
+    override val displayDescription = listOf(Component.text("Beat your friends in some classic OITC!"))
     override val icon: Material = Material.BOW
 
     val playerData: MutableMap<Player, OITCPlayerData> = mutableMapOf()

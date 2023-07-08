@@ -3,9 +3,12 @@ package com.simplymerlin.minigameserver.minigame.oitc.phase
 import com.simplymerlin.minigameserver.core.cancel
 import com.simplymerlin.minigameserver.core.state.GameState
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
+import io.github.bloepiloepi.pvp.PvpExtension
 import io.github.bloepiloepi.pvp.damage.CustomDamageType
+import io.github.bloepiloepi.pvp.events.EntityPreDeathEvent
 import io.github.bloepiloepi.pvp.events.FinalDamageEvent
 import io.github.bloepiloepi.pvp.events.PickupEntityEvent
+import io.github.bloepiloepi.pvp.events.ProjectileHitEvent.ProjectileBlockHitEvent
 import io.github.bloepiloepi.pvp.projectile.Arrow
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -40,16 +43,22 @@ class GamePhase(private val game: OneInTheChamberGame) : GameState() {
 
         createLines()
 
+        node.addChild(PvpExtension.events())
+
         PickupEntityEvent::class.cancel(node)
         ItemDropEvent::class.cancel(node)
 
         node.addListener(PlayerRespawnEvent::class.java) {
             spawn(it.player, false)
-            it.respawnPosition = randomRespawnLocation()
         }
 
         node.addListener(PlayerDeathEvent::class.java) {
             it.chatMessage = null
+            it.player.respawnPoint = randomRespawnLocation()
+        }
+
+        node.addListener(ProjectileBlockHitEvent::class.java) {
+            it.entity.remove()
         }
 
         node.addListener(FinalDamageEvent::class.java) {

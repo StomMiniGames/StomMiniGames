@@ -14,6 +14,7 @@ import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.logger.slf4j.ComponentLogger
 import net.minestom.server.MinecraftServer
 import net.minestom.server.adventure.audience.Audiences
@@ -149,9 +150,13 @@ class Server {
 
                     val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
                     games.forEachIndexed { i, game ->
+                        val displayName = game.displayName.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                        val lore = game.displayDescription.map { component ->
+                            component.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE).colorIfAbsent(NamedTextColor.GRAY)
+                        }
                         inventory.setItemStack(
                             i,
-                            ItemStack.of(game.icon).withDisplayName(game.displayName).withLore(game.displayDescription)
+                            ItemStack.of(game.icon).withDisplayName(displayName).withLore(lore)
                         )
                         inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
                             if (slot != i) return@addInventoryCondition
