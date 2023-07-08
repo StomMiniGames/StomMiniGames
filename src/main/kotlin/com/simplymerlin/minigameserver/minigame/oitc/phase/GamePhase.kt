@@ -168,6 +168,7 @@ class GamePhase(private val game: OneInTheChamberGame) : GameState() {
         var i = 1
         game.playerData.values.sortedByDescending { it.score }.take(14).forEach {
             val text = Component.text().append(
+                Component.text("$i. ", NamedTextColor.GRAY),
                 it.player.name.color(NamedTextColor.GOLD),
                 Component.text(": ", NamedTextColor.GRAY),
                 Component.text(it.score, NamedTextColor.GOLD)
