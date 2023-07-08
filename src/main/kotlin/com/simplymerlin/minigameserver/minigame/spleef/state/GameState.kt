@@ -23,6 +23,8 @@ import net.minestom.server.event.player.PlayerUseItemEvent
 import net.minestom.server.instance.block.Block
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
+import net.minestom.server.particle.Particle
+import net.minestom.server.particle.ParticleCreator
 
 class GameState(private val game: SpleefGame) : GameState() {
 
@@ -35,6 +37,7 @@ class GameState(private val game: SpleefGame) : GameState() {
 			it.instance.setBlock(it.blockPosition, Block.AIR)
 			it.entity.inventory.addItemStack(ItemStack.of(Material.SNOWBALL))
 		}
+
 		node.addListener(
 			EventListener.builder(PlayerUseItemEvent::class.java)
 				.filter {
@@ -50,15 +53,31 @@ class GameState(private val game: SpleefGame) : GameState() {
 				}
 				.build()
 		)
+
 		node.addListener(ProjectileCollideWithBlockEvent::class.java) {
 			if(it.entity.entityType != EntityType.SNOWBALL) return@addListener
+
 			it.instance.setBlock(it.collisionPosition, Block.AIR)
 			it.instance.playSound(
 				Sound.sound(Key.key("block.bubble_column.bubble_pop"), Sound.Source.BLOCK, 1f, 1f),
 				it.collisionPosition
 			)
 			it.entity.remove()
-			// TODO: particles?
+
+			val particle = ParticleCreator.createParticlePacket(
+				Particle.FALLING_DUST,
+				false,
+				it.collisionPosition.x, it.collisionPosition.y, it.collisionPosition.z,
+				0.5f, 0.5f, 0.5f,
+				0f,
+				25,
+			) { writer ->
+				writer.writeVarInt(it.block.stateId().toInt())
+			}
+
+			it.instance.players.forEach {
+				it.sendPacket(particle)
+			}
 		}
 
 		node.addListener(PlayerMoveEvent::class.java) { event ->
