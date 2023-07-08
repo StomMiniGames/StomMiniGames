@@ -4,7 +4,9 @@ import com.simplymerlin.minigameserver.core.cancel
 import com.simplymerlin.minigameserver.core.state.GameState
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
 import io.github.bloepiloepi.pvp.PvpExtension
+import io.github.bloepiloepi.pvp.config.*
 import io.github.bloepiloepi.pvp.damage.CustomDamageType
+import io.github.bloepiloepi.pvp.events.EquipmentDamageEvent
 import io.github.bloepiloepi.pvp.events.FinalDamageEvent
 import io.github.bloepiloepi.pvp.events.PickupEntityEvent
 import io.github.bloepiloepi.pvp.events.ProjectileHitEvent.ProjectileBlockHitEvent
@@ -46,6 +48,7 @@ class GamePhase(private val game: OneInTheChamberGame) : GameState() {
 
         PickupEntityEvent::class.cancel(node)
         ItemDropEvent::class.cancel(node)
+        EquipmentDamageEvent::class.cancel(node)
 
         node.addListener(PlayerRespawnEvent::class.java) {
             spawn(it.player, false)
