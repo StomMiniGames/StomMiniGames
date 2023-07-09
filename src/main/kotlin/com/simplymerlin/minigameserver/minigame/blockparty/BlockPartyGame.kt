@@ -20,9 +20,9 @@ class BlockPartyGame(instance: InstanceContainer, server: Server) : Minigame(ins
     override val name
         get() = "BlockParty"
 
-    override val displayName: Component = Component.text("Block Party", NamedTextColor.LIGHT_PURPLE).decoration(TextDecoration.ITALIC, false)
+    override val displayName: Component = Component.text("Block Party", NamedTextColor.LIGHT_PURPLE)
     override val displayDescription: List<Component> = listOf(
-        Component.text("Stand on the right coloured block", NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+        Component.text("Stand on the right coloured block")
     )
     override val icon: Material = Material.MAGENTA_CONCRETE
 
