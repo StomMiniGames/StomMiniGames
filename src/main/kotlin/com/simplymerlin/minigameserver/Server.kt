@@ -193,11 +193,8 @@ class Server {
             }
         }
 
-        globalEventHandler.addListener(
+        hub.eventNode().addListener(
             EventListener.builder(PlayerMoveEvent::class.java)
-                .filter {
-                    it.player.instance == hub
-                }
                 .filter {
                     it.player.openInventory == null
                 }
