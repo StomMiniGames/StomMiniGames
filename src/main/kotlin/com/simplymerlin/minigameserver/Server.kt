@@ -5,7 +5,6 @@ import ch.qos.logback.classic.Logger
 import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
 import com.simplymerlin.minigameserver.command.StuckCommand
-import com.simplymerlin.minigameserver.core.LoggerManager.debug
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
