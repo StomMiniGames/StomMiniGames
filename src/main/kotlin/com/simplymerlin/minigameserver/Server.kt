@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
+import com.simplymerlin.minigameserver.command.StuckCommand
 import com.simplymerlin.minigameserver.core.LoggerManager.debug
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
@@ -40,7 +41,9 @@ import org.slf4j.LoggerFactory
 
 class Server {
 
-    private val hubSpawn = Pos(-264.5, -29.0, 108.5)
+    companion object {
+        val HUB_SPAWN = Pos(-264.5, -29.0, 108.5)
+    }
 
     private val logger = ComponentLogger.logger(this::class.java)
 
@@ -48,7 +51,7 @@ class Server {
     private val instanceManager = MinecraftServer.getInstanceManager()
     private val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
-    private val hub = instanceManager.createInstanceContainer(FullBrightDimension.dimension)
+    val hub = instanceManager.createInstanceContainer(FullBrightDimension.dimension)
 
     val games = listOf(
         BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
@@ -94,6 +97,7 @@ class Server {
         logger.info("Registering commands.")
         MinecraftServer.getCommandManager().register(StartCommand(this))
         MinecraftServer.getCommandManager().register(SetGameCommand(this))
+        MinecraftServer.getCommandManager().register(StuckCommand(this))
 
         logger.info("Setting up hub.")
         hub.chunkLoader = PolarLoader(this::class.java.getResourceAsStream("/worlds/hub.polar")!!)
@@ -117,7 +121,7 @@ class Server {
             player.gameMode = GameMode.ADVENTURE
             it.setSpawningInstance(hub)
 
-            player.respawnPoint = hubSpawn
+            player.respawnPoint = HUB_SPAWN
 
             if (MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
                 player.setTag(Tag.Boolean("leader"), true)
@@ -241,7 +245,7 @@ class Server {
     fun teleportAllToHub() {
         MinecraftServer.getConnectionManager().onlinePlayers.forEach {
             if (it.instance != hub) {
-                it.setInstance(hub, hubSpawn)
+                it.setInstance(hub, HUB_SPAWN)
             }
             it.gameMode = GameMode.ADVENTURE
         }
