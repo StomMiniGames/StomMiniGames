@@ -9,6 +9,7 @@ import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
 import io.github.bloepiloepi.pvp.PvpExtension
+import net.hollowcube.polar.PolarLoader
 import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
@@ -36,6 +37,8 @@ import net.minestom.server.tag.Tag
 import org.slf4j.LoggerFactory
 
 class Server {
+
+    private val hubSpawn = Pos(-264.5, -29.0, 108.5)
 
     private val logger = ComponentLogger.logger(this::class.java)
 
@@ -91,7 +94,7 @@ class Server {
         MinecraftServer.getCommandManager().register(SetGameCommand(this))
 
         logger.info("Setting up hub.")
-        hub.setBlock(0, 64, 0, Block.STONE)
+        hub.chunkLoader = PolarLoader(this::class.java.getResourceAsStream("/worlds/hub.polar")!!)
 
         minecraftServer.start("0.0.0.0", 25565)
         logger.info("Startup complete in ${System.currentTimeMillis() - startTime}ms")
@@ -112,7 +115,7 @@ class Server {
             player.gameMode = GameMode.ADVENTURE
             it.setSpawningInstance(hub)
 
-            player.respawnPoint = Pos(0.0, 65.0, 0.0)
+            player.respawnPoint = hubSpawn
 
             if (MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
                 player.setTag(Tag.Boolean("leader"), true)
@@ -216,7 +219,7 @@ class Server {
     fun teleportAllToHub() {
         MinecraftServer.getConnectionManager().onlinePlayers.forEach {
             if (it.instance != hub) {
-                it.setInstance(hub, Pos(0.0, 65.0, 0.0))
+                it.setInstance(hub, hubSpawn)
             }
             it.gameMode = GameMode.ADVENTURE
         }
