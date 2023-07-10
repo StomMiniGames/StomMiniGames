@@ -8,11 +8,11 @@ import kotlin.reflect.KClass
 
 object LoggerManager {
 
-	fun setupLogger() {
-
-	}
-
 	fun logger(klass: KClass<out Any>): ComponentLogger {
 		return ComponentLogger.logger(klass.java)
+	}
+
+	fun ComponentLogger.debug(msg: Any) {
+		debug(msg.toString())
 	}
 }

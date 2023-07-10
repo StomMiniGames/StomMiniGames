@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
+import com.simplymerlin.minigameserver.core.LoggerManager.debug
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
@@ -34,6 +35,7 @@ import net.minestom.server.inventory.InventoryType
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.tag.Tag
+import net.minestom.server.timer.ExecutionType
 import org.slf4j.LoggerFactory
 
 class Server {
@@ -187,6 +189,26 @@ class Server {
                 it.player.hideBossBar(bossBar)
             }
         }
+
+        globalEventHandler.addListener(
+            EventListener.builder(PlayerMoveEvent::class.java)
+                .filter {
+                    it.player.instance == hub
+                }
+                .filter {
+                    it.player.openInventory == null
+                }
+                .handler {
+                    MinecraftServer.getSchedulerManager().buildTask {
+                        if(hub.getBlock(it.player.position).id() == Block.NETHER_PORTAL.id()) {
+                            it.player.velocity = it.player.position.direction().mul(-20.0)
+                            Thread.sleep(500) // TODO: Little bit hacky
+                            openGameSelectionMenu(it.player)
+                        }
+                    }.executionType(ExecutionType.ASYNC).schedule()
+                }
+                .build()
+        )
 
         globalEventHandler.addListener(
             EventListener.builder(PlayerSpawnEvent::class.java)
