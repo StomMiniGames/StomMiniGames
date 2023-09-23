@@ -9,6 +9,8 @@ import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
+import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
+import com.simplymerlin.minigameserver.minigame.spleef.SpleefGame
 import io.github.bloepiloepi.pvp.PvpExtension
 import net.hollowcube.polar.PolarLoader
 import net.kyori.adventure.bossbar.BossBar
@@ -64,6 +66,7 @@ class Server {
 
     val games = listOf(
         BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
+        SpleefGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
         OneInTheChamberGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
         MapTestGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
     )
