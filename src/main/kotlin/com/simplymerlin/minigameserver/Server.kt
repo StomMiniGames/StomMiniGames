@@ -4,15 +4,19 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
+import com.simplymerlin.minigameserver.command.StuckCommand
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
-import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
-import io.github.bloepiloepi.pvp.PvpExtension
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
+import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
 import com.simplymerlin.minigameserver.minigame.spleef.SpleefGame
+import io.github.bloepiloepi.pvp.PvpExtension
+import net.hollowcube.polar.PolarLoader
+import net.kyori.adventure.bossbar.BossBar
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.sound.Sound
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -21,11 +25,9 @@ import net.minestom.server.MinecraftServer
 import net.minestom.server.adventure.audience.Audiences
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
+import net.minestom.server.entity.Player
 import net.minestom.server.event.EventListener
-import net.minestom.server.event.player.PlayerDisconnectEvent
-import net.minestom.server.event.player.PlayerLoginEvent
-import net.minestom.server.event.player.PlayerSpawnEvent
-import net.minestom.server.event.player.PlayerUseItemEvent
+import net.minestom.server.event.player.*
 import net.minestom.server.event.server.ServerListPingEvent
 import net.minestom.server.extras.MojangAuth
 import net.minestom.server.instance.block.Block
@@ -34,17 +36,32 @@ import net.minestom.server.inventory.InventoryType
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.tag.Tag
+import net.minestom.server.timer.ExecutionType
+import net.minestom.server.timer.Task
+import net.minestom.server.timer.TaskSchedule
 import org.slf4j.LoggerFactory
+import kotlin.system.exitProcess
 
 class Server {
 
+    companion object {
+        val HUB_SPAWN = Pos(-264.5, -29.0, 108.5)
+    }
+
     private val logger = ComponentLogger.logger(this::class.java)
 
-    private val minecraftServer  = MinecraftServer.init()
+    private val minecraftServer = MinecraftServer.init()
     private val instanceManager = MinecraftServer.getInstanceManager()
     private val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
-    private val hub = instanceManager.createInstanceContainer(FullBrightDimension.dimension)
+    val hub = instanceManager.createInstanceContainer(FullBrightDimension.dimension)
+
+    /**
+     * A task to shut down the server due to various reasons such as all players leaving.
+     *
+     * If null, there is no task to shut down server.
+     */
+    var shutdownTask: Task? = null
 
     val games = listOf(
         BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
@@ -56,8 +73,24 @@ class Server {
     var currentGame: Minigame = games[0]
         set(value) {
             field = value
+            bossBar.name(
+                text().append(
+                    text("Current minigame: ", TextColor.color(0xFFFF00)),
+                    field.displayName
+                ).build()
+            )
             logger.info("${field.name} has been selected.")
         }
+
+    val bossBar = BossBar.bossBar(
+        text().append(
+            text("Current minigame: ", TextColor.color(0xFFFF00)),
+            currentGame.displayName
+        ).build(),
+        1F,
+        BossBar.Color.WHITE,
+        BossBar.Overlay.PROGRESS
+    )
 
     init {
         val level = Level.valueOf(System.getenv("LOG_LEVEL") ?: "INFO")
@@ -68,6 +101,11 @@ class Server {
         logger.info("Stomminigames is running on ${MinecraftServer.VERSION_NAME} (${MinecraftServer.PROTOCOL_VERSION}).")
         logger.info("${games.size} minigames have been found.")
         val startTime = System.currentTimeMillis()
+        MinecraftServer.getSchedulerManager().buildShutdownTask {
+            val logger = ComponentLogger.logger(this::class.java)
+            logger.info("Shutting down application. Goodnight")
+            exitProcess(0)
+        }
         MojangAuth.init()
         PvpExtension.init()
         initialiseEvents()
@@ -75,9 +113,10 @@ class Server {
         logger.info("Registering commands.")
         MinecraftServer.getCommandManager().register(StartCommand(this))
         MinecraftServer.getCommandManager().register(SetGameCommand(this))
+        MinecraftServer.getCommandManager().register(StuckCommand(this))
 
         logger.info("Setting up hub.")
-        hub.setBlock(0, 64, 0, Block.STONE)
+        hub.chunkLoader = PolarLoader(this::class.java.getResourceAsStream("/worlds/hub.polar")!!)
 
         minecraftServer.start("0.0.0.0", 25565)
         logger.info("Startup complete in ${System.currentTimeMillis() - startTime}ms")
@@ -91,37 +130,90 @@ class Server {
         logger.info("Registering events.")
         globalEventHandler.addListener(ServerListPingEvent::class.java) {
             val response = it.responseData
-            response.description = Component.text("So many minigames!", NamedTextColor.AQUA)
+            response.description = text("So many minigames!", NamedTextColor.AQUA)
         }
-        globalEventHandler.addListener(PlayerLoginEvent::class.java) { event ->
-            val player = event.player
+        globalEventHandler.addListener(PlayerLoginEvent::class.java) {
+            val player = it.player
             player.gameMode = GameMode.ADVENTURE
-            event.setSpawningInstance(hub)
+            it.setSpawningInstance(hub)
 
-            player.respawnPoint = Pos(0.0, 65.0, 0.0)
+            player.respawnPoint = HUB_SPAWN
 
-            if(MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
+            if (MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
                 player.setTag(Tag.Boolean("leader"), true)
+                shutdownTask?.cancel()
             }
         }
 
         globalEventHandler.addListener(PlayerLoginEvent::class.java) {
             val player = it.player
             Audiences.all().sendMessage(
-                Component.text()
-                    .append(Component.text("+", TextColor.color(0x00FF00)))
-                    .append(Component.space())
-                    .append(player.name.color(NamedTextColor.GRAY))
+                text().append(
+                    text("+", TextColor.color(0x00FF00)),
+                    Component.space(),
+                    player.name.color(NamedTextColor.GRAY)
+                )
             )
         }
         globalEventHandler.addListener(PlayerDisconnectEvent::class.java) {
             val player = it.player
             Audiences.all().sendMessage(
-                Component.text()
-                    .append(Component.text("-", TextColor.color(0xFF0000)))
-                    .append(Component.space())
-                    .append(player.name.color(NamedTextColor.GRAY))
+                text().append(
+                    text("-", TextColor.color(0xFF0000)),
+                    Component.space(),
+                    player.name.color(NamedTextColor.GRAY)
+                )
             )
+            if(player.getTag(Tag.Boolean("leader"))) {
+                player.setTag(Tag.Boolean("leader"), false)
+
+                val players = MinecraftServer.getConnectionManager().onlinePlayers
+                    .filter { it.uuid != player.uuid }
+                if(players.isEmpty()) {
+                    logger.error("There are no players left on the server! The server will shutdown in 30 seconds.")
+                    shutdownTask =  MinecraftServer.getSchedulerManager().buildTask {
+                        logger.info("The server is now shutting down")
+                        MinecraftServer.stopCleanly()
+                    }.delay(TaskSchedule.seconds(30)).schedule()
+
+                    return@addListener
+                }
+
+                players.first().apply {
+                    setTag(Tag.Boolean("leader"), true)
+                    Audiences.all().sendMessage(
+                        text("$username is now the leader of this session", NamedTextColor.GREEN)
+                    )
+
+                    if(!currentGame.running) {
+                        player.inventory.clear()
+                        inventory.setItemStack(
+                            0, ItemStack.of(Material.COMPASS)
+                                .withDisplayName(text("Game selector").decoration(TextDecoration.ITALIC, false))
+                                .withTag(Tag.String("handler_id"), "select_game")
+                        )
+
+                        inventory.setItemStack(
+                            8, ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
+                                .withDisplayName(
+                                    text("Start", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                                )
+                                .withTag(Tag.String("handler_id"), "start_game")
+                        )
+                        openGameSelectionMenu(this)
+                    }
+                }
+            }
+        }
+
+        globalEventHandler.addListener(PlayerChatEvent::class.java) { event ->
+            event.setChatFormat {
+                text().append(
+                    it.player.displayName ?: it.player.name,
+                    text(": "),
+                    text(it.message)
+                ).build()
+            }
         }
 
         globalEventHandler.addListener(
@@ -138,6 +230,45 @@ class Server {
         )
 
         globalEventHandler.addListener(
+            EventListener.builder(PlayerUseItemEvent::class.java)
+                .filter {
+                    !it.player.itemInMainHand.isAir
+                }
+                .filter {
+                    (it.player.itemInMainHand.getTag(Tag.String("handler_id")) ?: "null") == "select_game"
+                }
+                .handler {
+                    openGameSelectionMenu(it.player)
+                }.build()
+        )
+
+        //Bossbar
+        globalEventHandler.addListener(PlayerSpawnEvent::class.java) {
+            if (it.spawnInstance == hub) {
+                it.player.showBossBar(bossBar)
+            } else {
+                it.player.hideBossBar(bossBar)
+            }
+        }
+
+        hub.eventNode().addListener(
+            EventListener.builder(PlayerMoveEvent::class.java)
+                .filter {
+                    it.player.openInventory == null
+                }
+                .handler {
+                    MinecraftServer.getSchedulerManager().buildTask {
+                        if(hub.getBlock(it.player.position).id() == Block.NETHER_PORTAL.id()) {
+                            it.player.velocity = it.player.position.direction().mul(-20.0)
+                            Thread.sleep(500) // TODO: Little bit hacky
+                            openGameSelectionMenu(it.player)
+                        }
+                    }.executionType(ExecutionType.ASYNC).schedule()
+                }
+                .build()
+        )
+
+        globalEventHandler.addListener(
             EventListener.builder(PlayerSpawnEvent::class.java)
                 .filter {
                     it.player.getTag(Tag.Boolean("leader")) ?: false
@@ -146,40 +277,72 @@ class Server {
                     it.spawnInstance == hub
                 }
                 .handler {
-                    it.player.inventory.setItemStack(0, ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
-                        .withDisplayName(Component.text("Start", NamedTextColor.GREEN))
-                        .withTag(Tag.String("handler_id"), "start_game"))
+                    it.player.inventory.setItemStack(
+                        0, ItemStack.of(Material.COMPASS)
+                            .withDisplayName(text("Game selector").decoration(TextDecoration.ITALIC, false))
+                            .withTag(Tag.String("handler_id"), "select_game")
+                    )
 
-                    val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
-                    games.forEachIndexed { i, game ->
-                        val displayName = game.displayName.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
-                        val lore = game.displayDescription.map { component ->
-                            component.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE).colorIfAbsent(NamedTextColor.GRAY)
-                        }
-                        inventory.setItemStack(
-                            i,
-                            ItemStack.of(game.icon).withDisplayName(displayName).withLore(lore)
-                        )
-                        inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
-                            if (slot != i) return@addInventoryCondition
-                            currentGame = game
-                            it.player.closeInventory()
-                            it.player.sendMessage(game.displayName.append(Component.text(" has been selected", NamedTextColor.GREEN)))
-                            it.player.playSound(Sound.sound(Key.key("entity.experience_orb.pickup"), Sound.Source.NEUTRAL, 1f, 1f))
-                            inventoryConditionResult.isCancel = false
-                        }
-                    }
-                it.player.openInventory(inventory)
-            }.build())
+                    it.player.inventory.setItemStack(
+                        8, ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
+                            .withDisplayName(
+                                text("Start", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                            )
+                            .withTag(Tag.String("handler_id"), "start_game")
+                    )
+
+                    openGameSelectionMenu(it.player)
+                }.build()
+        )
     }
 
     fun teleportAllToHub() {
         MinecraftServer.getConnectionManager().onlinePlayers.forEach {
             if (it.instance != hub) {
-                it.setInstance(hub, Pos(0.0, 65.0, 0.0))
+                it.setInstance(hub, HUB_SPAWN)
             }
             it.gameMode = GameMode.ADVENTURE
         }
+    }
+
+    private fun openGameSelectionMenu(player: Player) {
+        val inventory = Inventory(InventoryType.CHEST_6_ROW, "Pick a game")
+        games.forEachIndexed { i, game ->
+            val displayName =
+                game.displayName.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+            val lore = game.displayDescription.map { component ->
+                component.decorationIfAbsent(TextDecoration.ITALIC, TextDecoration.State.FALSE)
+                    .colorIfAbsent(NamedTextColor.GRAY)
+            }
+            inventory.setItemStack(
+                i,
+                ItemStack.of(game.icon).withDisplayName(displayName).withLore(lore)
+            )
+            inventory.addInventoryCondition { _, slot, _, inventoryConditionResult ->
+                if (slot != i) return@addInventoryCondition
+                currentGame = game
+                player.closeInventory()
+                player.sendMessage(
+                    text().append(
+                        game.displayName,
+                        text(
+                            " has been selected!",
+                            NamedTextColor.GREEN
+                        )
+                    )
+                )
+                player.playSound(
+                    Sound.sound(
+                        Key.key("entity.experience_orb.pickup"),
+                        Sound.Source.NEUTRAL,
+                        1f,
+                        1f
+                    )
+                )
+                inventoryConditionResult.isCancel = false
+            }
+        }
+        player.openInventory(inventory)
     }
 
 }
