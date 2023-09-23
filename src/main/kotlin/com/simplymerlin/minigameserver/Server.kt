@@ -9,7 +9,6 @@ import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
-import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
 import com.simplymerlin.minigameserver.minigame.spleef.SpleefGame
 import io.github.bloepiloepi.pvp.PvpExtension
 import net.hollowcube.polar.PolarLoader
