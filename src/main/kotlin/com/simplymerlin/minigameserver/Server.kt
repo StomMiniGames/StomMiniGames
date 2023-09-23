@@ -36,7 +36,10 @@ import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.tag.Tag
 import net.minestom.server.timer.ExecutionType
+import net.minestom.server.timer.Task
+import net.minestom.server.timer.TaskSchedule
 import org.slf4j.LoggerFactory
+import kotlin.system.exitProcess
 
 class Server {
 
@@ -51,6 +54,13 @@ class Server {
     private val globalEventHandler = MinecraftServer.getGlobalEventHandler()
 
     val hub = instanceManager.createInstanceContainer(FullBrightDimension.dimension)
+
+    /**
+     * A task to shut down the server due to various reasons such as all players leaving.
+     *
+     * If null, there is no task to shut down server.
+     */
+    var shutdownTask: Task? = null
 
     val games = listOf(
         BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
@@ -89,6 +99,11 @@ class Server {
         logger.info("Stomminigames is running on ${MinecraftServer.VERSION_NAME} (${MinecraftServer.PROTOCOL_VERSION}).")
         logger.info("${games.size} minigames have been found.")
         val startTime = System.currentTimeMillis()
+        MinecraftServer.getSchedulerManager().buildShutdownTask {
+            val logger = ComponentLogger.logger(this::class.java)
+            logger.info("Shutting down application. Goodnight")
+            exitProcess(0)
+        }
         MojangAuth.init()
         PvpExtension.init()
         initialiseEvents()
@@ -124,6 +139,7 @@ class Server {
 
             if (MinecraftServer.getConnectionManager().onlinePlayers.size == 1) {
                 player.setTag(Tag.Boolean("leader"), true)
+                shutdownTask?.cancel()
             }
         }
 
@@ -146,6 +162,46 @@ class Server {
                     player.name.color(NamedTextColor.GRAY)
                 )
             )
+            if(player.getTag(Tag.Boolean("leader"))) {
+                player.setTag(Tag.Boolean("leader"), false)
+
+                val players = MinecraftServer.getConnectionManager().onlinePlayers
+                    .filter { it.uuid != player.uuid }
+                if(players.isEmpty()) {
+                    logger.error("There are no players left on the server! The server will shutdown in 30 seconds.")
+                    shutdownTask =  MinecraftServer.getSchedulerManager().buildTask {
+                        logger.info("The server is now shutting down")
+                        MinecraftServer.stopCleanly()
+                    }.delay(TaskSchedule.seconds(30)).schedule()
+
+                    return@addListener
+                }
+
+                players.first().apply {
+                    setTag(Tag.Boolean("leader"), true)
+                    Audiences.all().sendMessage(
+                        text("$username is now the leader of this session", NamedTextColor.GREEN)
+                    )
+
+                    if(!currentGame.running) {
+                        player.inventory.clear()
+                        inventory.setItemStack(
+                            0, ItemStack.of(Material.COMPASS)
+                                .withDisplayName(text("Game selector").decoration(TextDecoration.ITALIC, false))
+                                .withTag(Tag.String("handler_id"), "select_game")
+                        )
+
+                        inventory.setItemStack(
+                            8, ItemStack.of(Material.GREEN_STAINED_GLASS_PANE)
+                                .withDisplayName(
+                                    text("Start", NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false)
+                                )
+                                .withTag(Tag.String("handler_id"), "start_game")
+                        )
+                        openGameSelectionMenu(this)
+                    }
+                }
+            }
         }
 
         globalEventHandler.addListener(PlayerChatEvent::class.java) { event ->
