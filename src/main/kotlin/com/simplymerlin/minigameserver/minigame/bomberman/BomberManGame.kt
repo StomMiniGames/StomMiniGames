@@ -4,8 +4,7 @@ import com.simplymerlin.minigameserver.Server
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.core.phase.EndPhase
 import com.simplymerlin.minigameserver.core.state.ScheduledStateSeries
-import com.simplymerlin.minigameserver.minigame.bomberman.phase.GamePhase
-import com.simplymerlin.minigameserver.minigame.bomberman.phase.SetupPhase
+import com.simplymerlin.minigameserver.minigame.bomberman.phase.RoundPhase
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.minestom.server.coordinate.Pos
@@ -66,9 +65,12 @@ class BomberManGame(instance: InstanceContainer, server: Server): Minigame(insta
 	}
 
 	private fun addStates() {
-		state.add(SetupPhase(this))
-		state.add(GamePhase(this))
+		state.add(RoundPhase(this))
 		state.add(EndPhase(this))
+	}
+
+	fun addRound() {
+		state.addNext(RoundPhase(this))
 	}
 
 }
