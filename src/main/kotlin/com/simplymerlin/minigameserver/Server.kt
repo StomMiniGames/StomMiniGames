@@ -6,6 +6,7 @@ import com.simplymerlin.minigameserver.command.SetGameCommand
 import com.simplymerlin.minigameserver.command.StartCommand
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.minigame.blockparty.BlockPartyGame
+import com.simplymerlin.minigameserver.minigame.bomberman.BomberManGame
 import com.simplymerlin.minigameserver.minigame.oitc.OneInTheChamberGame
 import io.github.bloepiloepi.pvp.PvpExtension
 import com.simplymerlin.minigameserver.minigame.maptest.MapTestGame
@@ -50,6 +51,7 @@ class Server {
         BlockPartyGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
         SpleefGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
         OneInTheChamberGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
+        BomberManGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
         MapTestGame(instanceManager.createInstanceContainer(FullBrightDimension.dimension), this),
     )
 
