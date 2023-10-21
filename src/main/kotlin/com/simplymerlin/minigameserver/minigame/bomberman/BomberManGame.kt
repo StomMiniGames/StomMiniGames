@@ -4,6 +4,9 @@ import com.simplymerlin.minigameserver.Server
 import com.simplymerlin.minigameserver.core.Minigame
 import com.simplymerlin.minigameserver.core.phase.EndPhase
 import com.simplymerlin.minigameserver.core.state.ScheduledStateSeries
+import com.simplymerlin.minigameserver.minigame.bomberman.booster.Booster
+import com.simplymerlin.minigameserver.minigame.bomberman.booster.InstantHealBooster
+import com.simplymerlin.minigameserver.minigame.bomberman.booster.NuclearTNT
 import com.simplymerlin.minigameserver.minigame.bomberman.phase.RoundPhase
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -45,6 +48,11 @@ class BomberManGame(instance: InstanceContainer, server: Server): Minigame(insta
 		Block.MELON,
 		Block.SLIME_BLOCK
 	)
+
+	val boosters: Map<String, Booster> = setOf(
+		InstantHealBooster(),
+		NuclearTNT()
+	).associateBy { it.id }
 
 	val alivePlayers: MutableList<Player> = mutableListOf()
 

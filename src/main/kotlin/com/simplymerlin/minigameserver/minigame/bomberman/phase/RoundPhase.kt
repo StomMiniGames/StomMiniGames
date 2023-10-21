@@ -6,6 +6,7 @@ import com.simplymerlin.minigameserver.core.state.GameState
 import com.simplymerlin.minigameserver.minigame.bomberman.BomberManGame
 import io.github.bloepiloepi.pvp.config.ExplosionConfig
 import io.github.bloepiloepi.pvp.config.PvPConfig
+import io.github.bloepiloepi.pvp.events.ExplosionEvent
 import io.github.bloepiloepi.pvp.explosion.ExplosionListener
 import io.github.bloepiloepi.pvp.explosion.PvpExplosionSupplier
 import net.kyori.adventure.text.Component
@@ -15,16 +16,23 @@ import net.kyori.adventure.title.Title
 import net.minestom.server.MinecraftServer
 import net.minestom.server.adventure.audience.Audiences
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.coordinate.Vec
 import net.minestom.server.entity.GameMode
+import net.minestom.server.entity.ItemEntity
+import net.minestom.server.entity.Player
 import net.minestom.server.event.EventListener
 import net.minestom.server.event.EventNode
+import net.minestom.server.event.item.PickupItemEvent
 import net.minestom.server.event.player.PlayerBlockPlaceEvent
 import net.minestom.server.event.player.PlayerDeathEvent
 import net.minestom.server.event.player.PlayerDisconnectEvent
+import net.minestom.server.event.player.PlayerUseItemEvent
 import net.minestom.server.instance.batch.AbsoluteBlockBatch
 import net.minestom.server.instance.block.Block
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
+import net.minestom.server.tag.Tag
+import kotlin.math.round
 import kotlin.random.Random
 
 class RoundPhase(val game: BomberManGame) : StateSeries() {
@@ -176,10 +184,52 @@ class RoundPhase(val game: BomberManGame) : StateSeries() {
 			node.addListener(EventListener.builder(PlayerBlockPlaceEvent::class.java)
 				.filter { it.block == Block.TNT }
 				.handler {
-					it.isCancelled = true
+					if(!it.player.getItemInHand(it.hand).hasTag(Tag.String("booster"))) it.isCancelled = true
 					ExplosionListener.primeTnt(game.instance, it.blockPosition, it.player)
+//					game.instance.explode(it.blockPosition.x().toFloat(), it.blockPosition.y().toFloat(), it.blockPosition.z().toFloat(), 6f)
 				}
 				.build())
+			node.addListener(ExplosionEvent::class.java) {
+				val blocks = it.affectedBlocks
+				val max = 0.3 * blocks.size
+				blocks
+					.shuffled()
+					.take(Random.nextInt(0, round(max).toInt()))
+					.forEach {
+						if(Random.nextBoolean().also { println(it) }) {
+							val key = game.boosters.keys.random().also { println(it) }
+							val booster = game.boosters[key]!!.also { println(it.name) }
+							val droppedItem = ItemEntity(booster.item.withTag(Tag.String("booster"), key))
+							droppedItem.setInstance(game.instance, it)
+							droppedItem.velocity = Vec(0.0, 1.0, 0.0)
+							println("spawned")
+						}
+					}
+
+			}
+
+			node.addListener(
+				EventListener.builder(PlayerUseItemEvent::class.java)
+					.filter {
+						!it.player.itemInMainHand.isAir
+					}
+					.filter {
+						it.player.itemInMainHand.hasTag(Tag.String("booster"))
+					}
+					.handler {
+						val booster = game.boosters[it.player.itemInMainHand.getTag(Tag.String("booster"))]
+						booster?.applyTo(it.player, game)
+						it.player.inventory.setItemInHand(it.hand, it.player.inventory.getItemInHand(it.hand)
+							.withAmount { it - 1 }
+							.let { if(it.amount() <= 0) it.withMaterial(Material.AIR) else it }
+						)
+					}.build())
+
+			node.addListener(PickupItemEvent::class.java) {
+				if(it.entity is Player) {
+					(it.entity as Player).inventory.addItemStack(it.itemStack)
+				}
+			}
 
 			game.alivePlayers.forEach {
 				it.gameMode = GameMode.SURVIVAL
