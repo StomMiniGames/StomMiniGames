@@ -119,21 +119,31 @@ class RoundPhase(val game: BomberManGame) : StateSeries() {
 					return@forEach
 				}
 
-				repeat(Random.nextInt(1, 3)) {
+				repeat(Random.nextInt(3, 5)) {
 					batch.setBlock(point.add(0.0, it.toDouble(), 0.0), game.fillerBlocks.random())
 				}
 			}
 			batch.apply(game.instance) {}
 
 			val teleportPoints = game.playingField
-				.map { it.add(0.0, 3.0, 0.0) }
-				.filter { it.x() != 0.0 || it.z() != 0.0 }
-				.filter { it.x() % 2 != 0.0 && it.y() % 2 != 0.0 }
+				.map { it.add(0.0, 1.0, 0.0) }
+				.filter { it.x() % 2 != 0.0 && it.z() % 2 != 0.0 }
 
 			game.alivePlayers.addAll(MinecraftServer.getConnectionManager().onlinePlayers)
 			game.alivePlayers.forEach {
 				it.gameMode = GameMode.ADVENTURE
 				teleportPoints.random().let { point ->
+					val spawnBatch = AbsoluteBlockBatch()
+					for (x in -3..1) {
+						for (z in -3..1) {
+							repeat(3) { y ->
+								val block = Pos(point.add(x.toDouble(), y.toDouble(), z.toDouble()))
+								if(game.instance.getBlock(block) == Block.OBSIDIAN) return@repeat
+								spawnBatch.setBlock(block, Block.AIR)
+							}
+						}
+					}
+					spawnBatch.apply(game.instance) {}
 					if(it.instance != game.instance) it.setInstance(game.instance, (point as Pos).withLookAt(Pos(0.0, 64.0, 0.0)))
 					it.teleport((point as Pos).withLookAt(Pos(0.0, 64.0, 0.0)))
 				}
